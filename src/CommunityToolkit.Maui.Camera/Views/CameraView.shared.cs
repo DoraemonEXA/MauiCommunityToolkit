@@ -17,13 +17,15 @@ namespace CommunityToolkit.Maui.Views;
 public class CameraView : View, ICameraView
 {
 	static readonly BindablePropertyKey isAvailablePropertyKey =
-		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView), CameraViewDefaults.IsAvailable);
+		BindableProperty.CreateReadOnly(nameof(IsAvailable), typeof(bool), typeof(CameraView),
+			CameraViewDefaults.IsAvailable);
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="CameraFlashMode"/> property.
 	/// </summary>
 	public static readonly BindableProperty CameraFlashModeProperty =
-		BindableProperty.Create(nameof(CameraFlashMode), typeof(CameraFlashMode), typeof(CameraView), CameraViewDefaults.CameraFlashMode);
+		BindableProperty.Create(nameof(CameraFlashMode), typeof(CameraFlashMode), typeof(CameraView),
+			CameraViewDefaults.CameraFlashMode);
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="IsTorchOn"/> property.
@@ -37,7 +39,8 @@ public class CameraView : View, ICameraView
 	public static readonly BindableProperty IsAvailableProperty = isAvailablePropertyKey.BindableProperty;
 
 	static readonly BindablePropertyKey isCameraBusyPropertyKey =
-		BindableProperty.CreateReadOnly(nameof(IsCameraBusy), typeof(bool), typeof(CameraView), CameraViewDefaults.IsCameraBusy);
+		BindableProperty.CreateReadOnly(nameof(IsCameraBusy), typeof(bool), typeof(CameraView),
+			CameraViewDefaults.IsCameraBusy);
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="IsCameraBusy"/> property.
@@ -54,31 +57,40 @@ public class CameraView : View, ICameraView
 	/// Backing <see cref="BindableProperty"/> for the <see cref="ZoomFactor"/> property.
 	/// </summary>
 	public static readonly BindableProperty ZoomFactorProperty =
-		BindableProperty.Create(nameof(ZoomFactor), typeof(float), typeof(CameraView), CameraViewDefaults.ZoomFactor, coerceValue: CoerceZoom, defaultBindingMode: BindingMode.TwoWay);
+		BindableProperty.Create(nameof(ZoomFactor), typeof(float), typeof(CameraView), CameraViewDefaults.ZoomFactor,
+			coerceValue: CoerceZoom, defaultBindingMode: BindingMode.TwoWay);
 
 	/// <summary>
 	/// Backing <see cref="BindableProperty"/> for the <see cref="ImageCaptureResolution"/> property.
 	/// </summary>
-	public static readonly BindableProperty ImageCaptureResolutionProperty = BindableProperty.Create(nameof(ImageCaptureResolution),
-		typeof(Size), typeof(CameraView), CameraViewDefaults.ImageCaptureResolution, defaultBindingMode: BindingMode.TwoWay);
+	public static readonly BindableProperty ImageCaptureResolutionProperty = BindableProperty.Create(
+		nameof(ImageCaptureResolution),
+		typeof(Size), typeof(CameraView), CameraViewDefaults.ImageCaptureResolution,
+		defaultBindingMode: BindingMode.TwoWay);
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="CaptureImageCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty CaptureImageCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateCaptureImageCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(CaptureImageCommand), typeof(Command<CancellationToken>),
+			typeof(CameraView), default, BindingMode.OneWayToSource,
+			defaultValueCreator: CameraViewDefaults.CreateCaptureImageCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StartCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StartCameraPreviewCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(Command<CancellationToken>), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStartCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StartCameraPreviewCommand), typeof(Command<CancellationToken>),
+			typeof(CameraView), default, BindingMode.OneWayToSource,
+			defaultValueCreator: CameraViewDefaults.CreateStartCameraPreviewCommand).BindableProperty;
 
 	/// <summary>
 	/// Backing BindableProperty for the <see cref="StopCameraPreviewCommand"/> property.
 	/// </summary>
 	public static readonly BindableProperty StopCameraPreviewCommandProperty =
-		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default, BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand).BindableProperty;
+		BindableProperty.CreateReadOnly(nameof(StopCameraPreviewCommand), typeof(ICommand), typeof(CameraView), default,
+				BindingMode.OneWayToSource, defaultValueCreator: CameraViewDefaults.CreateStopCameraPreviewCommand)
+			.BindableProperty;
 
 	readonly WeakEventManager weakEventManager = new();
 
@@ -121,7 +133,8 @@ public class CameraView : View, ICameraView
 	/// <remarks>
 	/// <see cref="CaptureImageCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
 	/// </remarks>
-	public Command<CancellationToken> CaptureImageCommand => (Command<CancellationToken>)GetValue(CaptureImageCommandProperty);
+	public Command<CancellationToken> CaptureImageCommand =>
+		(Command<CancellationToken>)GetValue(CaptureImageCommandProperty);
 
 	/// <summary>
 	/// Gets the Command that starts the camera preview.
@@ -129,7 +142,8 @@ public class CameraView : View, ICameraView
 	/// /// <remarks>
 	/// <see cref="StartCameraPreviewCommand"/> has a <see cref="Type"/> of Command&lt;CancellationToken&gt; which requires a <see cref="CancellationToken"/> as a CommandParameter. See <see cref="Command{CancellationToken}"/> and <see cref="System.Windows.Input.ICommand.Execute(object)"/> for more information on passing a <see cref="CancellationToken"/> into <see cref="Command{T}"/> as a CommandParameter"
 	/// </remarks>
-	public Command<CancellationToken> StartCameraPreviewCommand => (Command<CancellationToken>)GetValue(StartCameraPreviewCommandProperty);
+	public Command<CancellationToken> StartCameraPreviewCommand =>
+		(Command<CancellationToken>)GetValue(StartCameraPreviewCommandProperty);
 
 	/// <summary>
 	/// Gets the Command that stops the camera preview.
@@ -175,7 +189,9 @@ public class CameraView : View, ICameraView
 		set => SetValue(IsTorchOnProperty, value);
 	}
 
-	static ICameraProvider CameraProvider => IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ?? throw new CameraException("Unable to retrieve CameraProvider");
+	static ICameraProvider CameraProvider =>
+		IPlatformApplication.Current?.Services.GetRequiredService<ICameraProvider>() ??
+		throw new CameraException("Unable to retrieve CameraProvider");
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	bool ICameraView.IsAvailable
@@ -271,4 +287,58 @@ public class CameraView : View, ICameraView
 
 		return input;
 	}
+
+	#region Camera Analysis
+
+	/// <summary>
+	/// Backing <see cref="BindableProperty"/> for the <see cref="IsAnalysisOn"/> property.
+	/// </summary>
+	public static readonly BindableProperty IsAnalysisOnProperty =
+		BindableProperty.Create(nameof(IsAnalysisOn), typeof(bool), typeof(CameraView), false);
+
+	/// <summary>
+	/// Gets or sets a value indicating whether the analysis use case is on.
+	/// </summary>
+	public bool IsAnalysisOn
+	{
+		get => (bool)GetValue(IsAnalysisOnProperty);
+		set => SetValue(IsAnalysisOnProperty, value);
+	}
+	
+	/// <summary>
+	/// Event that is raised when the camera analysis fails.
+	/// </summary>
+	public event EventHandler<AnalyzingImageFailedEventArgs> AnalyzingImageFailed
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <summary>
+	/// Event that is raised when the camera analyzes an image.
+	/// </summary>
+	/// <remarks>
+	/// The <see cref="AnalyzingImageEventArgs"/> contains the analysis image data.
+	/// </remarks>
+	public event EventHandler<AnalyzingImageEventArgs> AnalyzingImage
+	{
+		add => weakEventManager.AddEventHandler(value);
+		remove => weakEventManager.RemoveEventHandler(value);
+	}
+
+	/// <inheritdoc cref="ICameraView.OnAnalyzingImage"/>
+	public void OnAnalyzingImage(byte[] imageData, int width, int height, int rotationDegrees)
+	{
+		weakEventManager.HandleEvent(this, new AnalyzingImageEventArgs(imageData, width, height, rotationDegrees),
+			nameof(AnalyzingImage));
+	}
+
+	/// <inheritdoc cref="ICameraView.OnAnalyzingImageFailed"/>
+	public void OnAnalyzingImageFailed(string failureReason)
+	{
+		weakEventManager.HandleEvent(this, new AnalyzingImageFailedEventArgs(failureReason),
+			nameof(AnalyzingImageFailed));
+	}
+
+	#endregion
 }

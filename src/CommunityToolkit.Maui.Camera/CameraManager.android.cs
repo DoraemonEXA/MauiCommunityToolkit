@@ -18,7 +18,8 @@ namespace CommunityToolkit.Maui.Core;
 [SupportedOSPlatform("android21.0")]
 partial class CameraManager
 {
-	readonly Context context = mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
+	readonly Context context =
+		mauiContext.Context ?? throw new CameraException($"Unable to retrieve {nameof(Context)}");
 
 	NativePlatformCameraPreviewView? previewView;
 	IExecutorService? cameraExecutor;
@@ -30,6 +31,7 @@ partial class CameraManager
 	Preview? cameraPreview;
 	ResolutionSelector? resolutionSelector;
 	ResolutionFilter? resolutionFilter;
+	ImageAnalysis? imageAnalysis;
 
 	public void Dispose()
 	{
@@ -46,7 +48,9 @@ partial class CameraManager
 		{
 			previewView.SetScaleType(NativePlatformCameraPreviewView.ScaleType.FitCenter);
 		}
-		cameraExecutor = Executors.NewSingleThreadExecutor() ?? throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
+
+		cameraExecutor = Executors.NewSingleThreadExecutor() ??
+		                 throw new CameraException($"Unable to retrieve {nameof(IExecutorService)}");
 
 		return previewView;
 	}
@@ -71,7 +75,7 @@ partial class CameraManager
 		if (resolutionFilter is not null)
 		{
 			if (Math.Abs(resolutionFilter.TargetSize.Width - resolution.Width) < double.Epsilon &&
-				Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
+			    Math.Abs(resolutionFilter.TargetSize.Height - resolution.Height) < double.Epsilon)
 			{
 				return;
 			}
@@ -91,9 +95,9 @@ partial class CameraManager
 		resolutionSelector?.Dispose();
 
 		resolutionSelector = new ResolutionSelector.Builder()
-		.SetAllowedResolutionMode(ResolutionSelector.PreferHigherResolutionOverCaptureRate)
-		.SetResolutionFilter(resolutionFilter)
-		.Build();
+			.SetAllowedResolutionMode(ResolutionSelector.PreferHigherResolutionOverCaptureRate)
+			.SetResolutionFilter(resolutionFilter)
+			.Build();
 
 		if (IsInitialized)
 		{
@@ -134,6 +138,9 @@ partial class CameraManager
 
 			resolutionFilter?.Dispose();
 			resolutionFilter = null;
+			
+			imageAnalysis?.Dispose();
+			imageAnalysis = null;
 		}
 	}
 
@@ -149,7 +156,9 @@ partial class CameraManager
 
 		cameraProviderFuture.AddListener(new Runnable(async () =>
 		{
-			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ?? throw new CameraException($"Unable to retrieve {nameof(ProcessCameraProvider)}"));
+			processCameraProvider = (ProcessCameraProvider)(cameraProviderFuture.Get() ??
+			                                                throw new CameraException(
+				                                                $"Unable to retrieve {nameof(ProcessCameraProvider)}"));
 
 			if (cameraProvider.AvailableCameras is null)
 			{
@@ -164,7 +173,6 @@ partial class CameraManager
 			await StartUseCase(token);
 
 			cameraProviderTCS.SetResult();
-
 		}), ContextCompat.GetMainExecutor(context));
 
 		await cameraProviderTCS.Task.WaitAsync(token);
@@ -186,9 +194,21 @@ partial class CameraManager
 		cameraPreview.SetSurfaceProvider(previewView?.SurfaceProvider);
 
 		imageCapture = new ImageCapture.Builder()
-		.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)
-		.SetResolutionSelector(resolutionSelector)
-		.Build();
+			.SetCaptureMode(ImageCapture.CaptureModeMaximizeQuality)
+			.SetResolutionSelector(resolutionSelector)
+			.Build();
+
+		imageAnalysis?.Dispose();
+		if (cameraView.IsAnalysisOn)
+		{
+			imageAnalysis = new ImageAnalysis.Builder()
+				.SetBackpressureStrategy(ImageAnalysis.StrategyKeepOnlyLatest)
+				.Build();
+		}
+		else
+		{
+			imageAnalysis = null;
+		}
 
 		await StartCameraPreview(token);
 	}
@@ -207,18 +227,29 @@ partial class CameraManager
 				await cameraProvider.RefreshAvailableCameras(token);
 			}
 
-			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ?? throw new CameraException("No camera available on device");
+			cameraView.SelectedCamera = cameraProvider.AvailableCameras?.FirstOrDefault() ??
+			                            throw new CameraException("No camera available on device");
 		}
 
-		var cameraSelector = cameraView.SelectedCamera.CameraSelector ?? throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
+		var cameraSelector = cameraView.SelectedCamera.CameraSelector ??
+		                     throw new CameraException($"Unable to retrieve {nameof(CameraSelector)}");
 
 		var owner = (ILifecycleOwner)context;
-		camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, imageCapture);
+		if (imageAnalysis == null || cameraExecutor == null)
+		{
+			camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, imageCapture);
+		}
+		else
+		{
+			imageAnalysis.SetAnalyzer(cameraExecutor, new ImageAnalyzer(cameraView));
+			camera = processCameraProvider.BindToLifecycle(owner, cameraSelector, cameraPreview, imageCapture, imageAnalysis);
+		}
 
 		cameraControl = camera.CameraControl;
 
 		//start the camera with AutoFocus
-		MeteringPoint point = previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
+		MeteringPoint point =
+			previewView.MeteringPointFactory.CreatePoint(previewView.Width / 2.0f, previewView.Height / 2.0f, 0.1f);
 		FocusMeteringAction action = new FocusMeteringAction.Builder(point).Build();
 		camera.CameraControl.StartFocusAndMetering(action);
 
@@ -239,7 +270,6 @@ partial class CameraManager
 
 	protected virtual partial void PlatformDisconnect()
 	{
-
 	}
 
 	protected virtual partial ValueTask PlatformTakePicture(CancellationToken token)
@@ -251,7 +281,8 @@ partial class CameraManager
 		return ValueTask.CompletedTask;
 	}
 
-	sealed class FutureCallback(Action<Java.Lang.Object?> action, Action<Throwable?> failure) : Java.Lang.Object, IFutureCallback
+	sealed class FutureCallback(Action<Java.Lang.Object?> action, Action<Throwable?> failure)
+		: Java.Lang.Object, IFutureCallback
 	{
 		public void OnSuccess(Java.Lang.Object? value)
 		{
@@ -332,7 +363,8 @@ partial class CameraManager
 
 		public IList<Android.Util.Size> Filter(IList<Android.Util.Size> supportedSizes, int rotationDegrees)
 		{
-			var filteredList = supportedSizes.Where(size => size.Width <= TargetSize.Width && size.Height <= TargetSize.Height)
+			var filteredList = supportedSizes
+				.Where(size => size.Width <= TargetSize.Width && size.Height <= TargetSize.Height)
 				.OrderByDescending(size => size.Width * size.Height).ToList();
 
 			if (!filteredList.Any())
@@ -358,4 +390,65 @@ partial class CameraManager
 			observerAction.Invoke(value);
 		}
 	}
+
+	#region Analysis
+
+	sealed class ImageAnalyzer : Java.Lang.Object, ImageAnalysis.IAnalyzer
+	{
+		readonly ICameraView cameraView;
+		public Android.Util.Size? DefaultTargetResolution => null;
+
+		public ImageAnalyzer(ICameraView cameraView)
+		{
+			this.cameraView = cameraView;
+		}
+
+		public void Analyze(IImageProxy image)
+		{
+			var img = image.Image;
+
+			if (img is null)
+			{
+				cameraView.OnAnalyzingImageFailed("Unable to obtain Image data.");
+				return;
+			}
+
+			var buffer = GetFirstPlane(img.GetPlanes())?.Buffer;
+
+			if (buffer is null)
+			{
+				cameraView.OnAnalyzingImageFailed("Unable to obtain a buffer for the image plane.");
+				image.Close();
+				return;
+			}
+
+			var imgData = new byte[buffer.Remaining()];
+			try
+			{
+				buffer.Get(imgData);
+				cameraView.OnAnalyzingImage(imgData, image.Width, image.Height, image.ImageInfo.RotationDegrees);
+			}
+			catch (System.Exception ex)
+			{
+				cameraView.OnMediaCapturedFailed(ex.Message);
+				throw;
+			}
+			finally
+			{
+				image.Close();
+			}
+
+			static Plane? GetFirstPlane(Plane[]? planes)
+			{
+				if (planes is null || planes.Length is 0)
+				{
+					return null;
+				}
+
+				return planes[0];
+			}
+		}
+	}
+
+	#endregion
 }

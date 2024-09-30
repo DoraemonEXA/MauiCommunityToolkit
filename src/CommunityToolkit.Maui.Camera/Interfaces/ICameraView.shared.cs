@@ -96,4 +96,24 @@ public interface ICameraView : IView, IAsynchronousHandler
 	/// <param name="token"></param>
 	/// <returns></returns>
 	ValueTask<IReadOnlyList<CameraInfo>> GetAvailableCameras(CancellationToken token);
+
+	/// <summary>
+	/// Gets a value indicating whether the analysis is on.
+	/// </summary>
+	bool IsAnalysisOn { get; }
+	
+	/// <summary>
+	/// Occurs when an image is passed to analyzer
+	/// </summary>
+	/// <param name="imageData"></param>
+	/// <param name="width"></param>
+	/// <param name="height"></param>
+	/// <param name="rotationDegrees"></param>
+	void OnAnalyzingImage(byte[] imageData, int width, int height, int rotationDegrees);
+
+	/// <summary>
+	/// Occurs when an image fails to pass to analyzer
+	/// </summary>
+	/// <param name="failureReason"></param>
+	void OnAnalyzingImageFailed(string failureReason);
 }
