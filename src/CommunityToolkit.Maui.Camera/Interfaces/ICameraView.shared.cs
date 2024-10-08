@@ -109,7 +109,7 @@ public interface ICameraView : IView, IAsynchronousHandler
 	/// <param name="width"></param>
 	/// <param name="height"></param>
 	/// <param name="rotationDegrees"></param>
-	void OnAnalyzingImage(byte[] imageData, int width, int height, int rotationDegrees);
+	void OnAnalyzingImage(Stream imageData, int width, int height, int rotationDegrees);
 
 	/// <summary>
 	/// Occurs when an image fails to pass to analyzer

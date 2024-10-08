@@ -1,5 +1,7 @@
 ﻿using System.Runtime.Versioning;
 using Android.Content;
+using Android.Graphics;
+using Android.Util;
 using AndroidX.Camera.Core;
 using AndroidX.Camera.Core.Impl.Utils.Futures;
 using AndroidX.Camera.Core.ResolutionSelector;
@@ -12,6 +14,7 @@ using Java.Lang;
 using Java.Util.Concurrent;
 using static Android.Media.Image;
 using Math = System.Math;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace CommunityToolkit.Maui.Core;
 
@@ -405,33 +408,23 @@ partial class CameraManager
 
 		public void Analyze(IImageProxy image)
 		{
-			var img = image.Image;
-
-			if (img is null)
-			{
-				cameraView.OnAnalyzingImageFailed("Unable to obtain Image data.");
-				return;
-			}
-
-			var buffer = GetFirstPlane(img.GetPlanes())?.Buffer;
-
-			if (buffer is null)
-			{
-				cameraView.OnAnalyzingImageFailed("Unable to obtain a buffer for the image plane.");
-				image.Close();
-				return;
-			}
-
-			var imgData = new byte[buffer.Remaining()];
 			try
 			{
-				buffer.Get(imgData);
-				cameraView.OnAnalyzingImage(imgData, image.Width, image.Height, image.ImageInfo.RotationDegrees);
+				var bmp = image.ToBitmap();
+				var memStream = new MemoryStream();
+				if (bmp.Compress(Bitmap.CompressFormat.Jpeg!, 100, memStream))
+				{
+					memStream.Seek(0, SeekOrigin.Begin);
+					cameraView.OnAnalyzingImage(memStream, image.Width, image.Height, image.ImageInfo.RotationDegrees);
+				}
+				else
+				{
+					cameraView.OnAnalyzingImageFailed("Unable to obtain a buffer for the image plane.");
+				}
 			}
 			catch (System.Exception ex)
 			{
-				cameraView.OnMediaCapturedFailed(ex.Message);
-				throw;
+				cameraView.OnAnalyzingImageFailed(ex.Message);
 			}
 			finally
 			{

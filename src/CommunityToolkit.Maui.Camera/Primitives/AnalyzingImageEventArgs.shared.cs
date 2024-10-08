@@ -7,12 +7,12 @@
 /// <param name="width"></param>
 /// <param name="height"></param>
 /// <param name="rotationDegrees"></param>
-public class AnalyzingImageEventArgs(byte[] imageData, int width, int height, int rotationDegrees) : EventArgs
+public class AnalyzingImageEventArgs(Stream imageData, int width, int height, int rotationDegrees) : EventArgs
 {
 	/// <summary>
 	/// Image data
 	/// </summary>
-	public byte[] ImageData { get; } = imageData;
+	public Stream ImageData { get; } = imageData;
 
 	/// <summary>
 	/// Image width

@@ -327,7 +327,7 @@ public class CameraView : View, ICameraView
 	}
 
 	/// <inheritdoc cref="ICameraView.OnAnalyzingImage"/>
-	public void OnAnalyzingImage(byte[] imageData, int width, int height, int rotationDegrees)
+	public void OnAnalyzingImage(Stream imageData, int width, int height, int rotationDegrees)
 	{
 		weakEventManager.HandleEvent(this, new AnalyzingImageEventArgs(imageData, width, height, rotationDegrees),
 			nameof(AnalyzingImage));
