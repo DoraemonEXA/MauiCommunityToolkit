@@ -430,16 +430,6 @@ partial class CameraManager
 			{
 				image.Close();
 			}
-
-			static Plane? GetFirstPlane(Plane[]? planes)
-			{
-				if (planes is null || planes.Length is 0)
-				{
-					return null;
-				}
-
-				return planes[0];
-			}
 		}
 	}
 
